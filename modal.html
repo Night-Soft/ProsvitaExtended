@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="modal.css">
+    <link rel="stylesheet" src="./dist/zoomist.min.css" />
+
+    <script src="./dist/zoomist.min.js"></script>
+
+</head>
+
+<body>
+    <div>
+        <div id="my-zoomist"
+            data-zoomist-src="https://dashboard.prosvita.net/storages/assignments/355145/users/118940/2_%D0%97%D0%B5%D0%BD%D1%87%D0%B5%D0%BD%D0%BA%D0%BE-%D0%90%D1%80%D1%82%D0%B5%D0%BC_%D0%AF%D0%94%D0%A1_3.jpg">
+        </div>
+    </div>
+    <script>// syntax
+
+        // for example
+        new Zoomist('#my-zoomist')
+
+        // advanced usage
+        const myZoomist = document.querySelector('#my-zoomist')
+        new Zoomist(myZoomist, {
+            // optional parameters
+            maxRatio: 4,
+            height: '60%',
+            // if you need silder
+            slider: true,
+            // if you need zoomer
+            zoomer: true,
+            // event
+            on: {
+                ready() {
+                    console.log('Zoomist ready!')
+                }
+            }
+        })</script>
+</body>
+
+</html>
