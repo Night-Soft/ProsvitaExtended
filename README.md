@@ -5,7 +5,7 @@
 У низу на зображеннях можна побачити різницю інтрефейсів.
 | До | Після |
 |--|--|
-|  ![До](https://github.com/Night-Soft/readme/blob/master/ProsvitaExtended/Before.png)|![Після](https://github.com/Night-Soft/readme/blob/master/ProsvitaExtended/after.png)|
+|  ![До](https://github.com/Night-Soft/readme/blob/master/ProsvitaExtended/Before.png)|![Після](https://github.com/Night-Soft/readme/blob/master/ProsvitaExtended/After.png)|
 
 # Можливості
 - Збільшення зображення за допомогою спеціальних кнопок та ролика вашої мишки.
