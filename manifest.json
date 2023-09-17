@@ -3,15 +3,15 @@
     "name": "Prosvita Extended",
     "description": "Prosvita Extended",
     "short_name": "Prosvita Extended",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "icons": {
         "200": "img/icon.png"
     },
     "content_scripts": [{
         "matches": ["https://dashboard.prosvita.net/company/*"],
         "all_frames": false,
-        "js": ["js/animatsia.js", "js/contentScript.js", "dist/zoomist.js"],
-        "css":["dist/zoomist.css", "modal.css"]
+        "js": ["js/FileReady.js", "js/thumbnails.js", "js/contentScript.js", "js/ZoomElement.js"],
+        "css":["css/style.css", "css/thumbnails.css"]
     }],
     "action": {
         "default_icon": "img/icon.png",
@@ -21,12 +21,8 @@
         "matches": ["https://dashboard.prosvita.net/company/*"]
     },
     "permissions": [
-        "scripting",
         "tabs",
-        "activeTab",
-        "notifications",
-        "storage",
-        "system.display"
+        "activeTab"
     ],
     "host_permissions": [
         "https://dashboard.prosvita.net/company/*"
