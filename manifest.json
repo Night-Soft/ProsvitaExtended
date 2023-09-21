@@ -10,12 +10,11 @@
     "content_scripts": [{
         "matches": ["https://dashboard.prosvita.net/company/*"],
         "all_frames": false,
-        "js": ["js/FileReady.js", "js/thumbnails.js", "js/contentScript.js", "js/ZoomElement.js"],
+        "js": ["js/Thumbnails.js", "js/content-script.js", "js/ZoomElement.js"],
         "css":["css/style.css", "css/thumbnails.css"]
     }],
     "action": {
-        "default_icon": "img/icon.png",
-        "default_popup": "index.html"
+        "default_icon": "img/icon.png"
     },
     "externally_connectable": {
         "matches": ["https://dashboard.prosvita.net/company/*"]

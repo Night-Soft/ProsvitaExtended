@@ -1,4 +1,4 @@
-.home_work-viewer {
+.homework-viewer {
   display: none;
   flex-direction: column;
   justify-content: start;
@@ -18,7 +18,7 @@
   justify-content: center;
   position: absolute;
   width: 100%;
-  z-index: +1;
+  z-index: +2;
 }
 
 #ImageContainer {
@@ -32,14 +32,16 @@
   overflow: hidden;
   display: flex;
   justify-content: center;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
 }
 
-#HomeWorkImage {
-  width: 500px;
-  height: 500px;
-  margin-top: 40px;
+#HomeworkImage {
+  width: 86%;
+  height: 86%;
   margin: auto;
+  margin-top: 44px;
+  margin-bottom: 44px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -48,7 +50,6 @@
 }
 
 .btn-container {
-  transition: 1s;
   position: relative;
   display: flex;
   justify-content: center;
@@ -56,6 +57,7 @@
   width: fit-content;
   align-self: center;
   margin: unset;
+  margin-left: 100px;
   border-radius: 0px 0px 8px 8px;
   overflow: hidden;
   backdrop-filter: blur(4px);
@@ -129,11 +131,12 @@
   background-image: url('chrome-extension://__MSG_@@extension_id__/img/close.svg');
 }
 
-.concealer {
+.open-buttons {
   position: absolute;
   width: 120px;
   height: 120px;
   z-index: 100;
+  cursor: pointer;
 }
 
   .scale-slider {
