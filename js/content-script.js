@@ -1,19 +1,17 @@
 let hwNodeList,
-  viewerContainer,
+  homeworkViewer,
   homeworkImage,
-  timeOutId,
-  getHwIntervalId,
   zoomElement,
   slider;
 
-const ImageViewer = {
+  const ImageViewer = {
   thumbnails: undefined,
   isCreated: false,
   urls: [],
   _index: 0,
   get index() { return this._index; },
   set index(value) { this._index = value; },
-  setImage(url, index) {
+  setImage(index) {
     const endTransition = () => {
       homeworkImage.style.transition = "0";
       homeworkImage.removeEventListener("transitionend", endTransition);
@@ -22,17 +20,17 @@ const ImageViewer = {
     homeworkImage.addEventListener("transitionend", endTransition);
 
     homeworkImage.style.transition = "0.7s";
-    homeworkImage.style.backgroundImage = `url(${url})`;
-
-    this.thumbnails[this._index].classList.remove('thumbnails-active');
-    this.thumbnails[index].classList.add('thumbnails-active');
-
+    homeworkImage.style.backgroundImage = `url(${this.urls[index]})`;
+    if (this.thumbnails) {
+      this.thumbnails[this._index].classList.remove('thumbnails-active');
+      this.thumbnails[index].classList.add('thumbnails-active');
+    }
     this.index = index;
   }
 }
 
 const toggleViewer = function (show = true, index = 0) {
-  let openButton = document.querySelectorAll(".open-buttons")[index];
+  let openButton = document.querySelectorAll(".open-button")[index];
   const zoomControl = document.getElementsByClassName('zoom-control')[0];
   const thumbnailsContainer = document.getElementsByClassName('thumbnails-container')[0];
   let { width, height, left, top } = openButton.getBoundingClientRect();
@@ -49,18 +47,22 @@ const toggleViewer = function (show = true, index = 0) {
     }
 
     zoomControl.style.opacity = "0";
-    thumbnailsContainer.style.opacity = "0";
-    viewerContainer.style.overflow = "hidden";
-    viewerContainer.style.display = "flex";
+    if (thumbnailsContainer) thumbnailsContainer.style.opacity = "0";
+    homeworkImage.style.width = "";
+    homeworkImage.style.height = "";
+    homeworkViewer.style.overflow = "hidden";
+    homeworkViewer.style.display = "flex";
 
     homeworkImage.animate(opacity, { duration: 350 });
-    const animation = viewerContainer.animate(keyframe, { duration: 700 });
+    const animation = homeworkViewer.animate(keyframe, { duration: 700 });
     animation.onfinish = () => {
-      viewerContainer.style.overflow = "";
+      homeworkViewer.style.overflow = "";
       zoomControl.style.opacity = "1";
-      thumbnailsContainer.style.opacity = "1";
       zoomControl.animate(opacity, { duration: 500 });
-      thumbnailsContainer.animate(opacity, { duration: 500 });
+      if (thumbnailsContainer) {
+        thumbnailsContainer.style.opacity = "1";
+        thumbnailsContainer.animate(opacity, { duration: 500 });
+      }
     }
   } else {
     const keyframe = {
@@ -75,56 +77,65 @@ const toggleViewer = function (show = true, index = 0) {
       opacity: [1, 0]
     }
 
-    zoomControl.animate(opacity, { duration: 200 });
-    thumbnailsContainer.animate(opacity, { duration: 200 }).onfinish = () => {
+    zoomControl.animate(opacity, { duration: 200 }).onfinish = () => {
       zoomControl.style.opacity = "0";
-      thumbnailsContainer.style.opacity = "0";
-
-    };
-    homeworkImage.animate(opacity, { duration: 350, delay: 350 });
-    const animation = viewerContainer.animate(keyframe, { duration: 700 });
-    animation.onfinish = () => {
-      viewerContainer.style.display = "none";
     }
-    viewerContainer.animate(opacity, { duration: 250, delay: 450 });
+    if (thumbnailsContainer) {
+      thumbnailsContainer.animate(opacity, { duration: 200 }).onfinish = () => {
+        thumbnailsContainer.style.opacity = "0";
+      }
+    }
+    homeworkImage.animate(opacity, { duration: 350, delay: 350 });
+    const animation = homeworkViewer.animate(keyframe, { duration: 700 });
+    animation.onfinish = () => {
+      homeworkViewer.style.display = "none";
+    }
+    homeworkViewer.animate(opacity, { duration: 250, delay: 450 });
   }
 }
 
 let thumbnailsContainer;
 const createViewer = function () {
   if (hwNodeList.length > 0) {
-    viewerContainer = document.createElement("DIV");
-    viewerContainer.className = 'homework-viewer';
 
-    homeworkImage = document.createElement("div");
+    homeworkViewer = document.createElement("DIV");
+    homeworkViewer.className = 'homework-viewer';
+
+    let controlImageContainer = document.createElement("DIV");
+    controlImageContainer.classList.add("control-image-container");
+    controlImageContainer.appendChild(createZoomControl()); // add zoom-control
+
+    homeworkImage = document.createElement("DIV");
     homeworkImage.setAttribute("id", "HomeworkImage");
 
     imageContainer = document.createElement("DIV");
     imageContainer.setAttribute("id", "ImageContainer");
     imageContainer.appendChild(homeworkImage);
 
-    viewerContainer.appendChild(imageContainer);
-    document.body.prepend(viewerContainer);
+    controlImageContainer.appendChild(imageContainer);
+    homeworkViewer.appendChild(controlImageContainer);
+
+    if (hwNodeList.length > 1) {
+      thumbnailsContainer = new Thumbnails({
+        element: homeworkViewer,
+        urls: ImageViewer.urls
+      }, {
+        imageClick(ev, url) {
+          ImageViewer.setImage(ev.index);
+        }
+      });
+      thumbnailsContainer.create();
+      ImageViewer.thumbnails = thumbnailsContainer.thumbnails;
+    }
+
+    document.body.prepend(homeworkViewer);
 
     zoomElement = new ZoomElement(homeworkImage);
     zoomElement.onscale = (event) => {
-      slider.value = parseFloat((event.scale.value * 100 / event.scale.max).toFixed(2));
+      slider.value = (event.value / event.max * parseInt(slider.max)).toFixed(2);
     };
 
-    thumbnailsContainer = new Thumbnails(
-      {
-        element: imageContainer,
-        urls: ImageViewer.urls
-      },
-      {
-        imageClick(ev, url) {
-          ImageViewer.setImage(url, ev.index);
-        }
-      });
-    thumbnailsContainer.create();
-    ImageViewer.thumbnails = thumbnailsContainer.thumbnails;
-    ImageViewer.setImage(hwNodeList[ImageViewer.index].lastChild.href, 0);
-    createControlBtn();
+    ImageViewer.setImage(0);
     ImageViewer.isCreated = true;
   } else {
     console.log("No homework images found!");
@@ -149,7 +160,7 @@ const setImageSize = function () {
   }
 }
 
-function createControlBtn() {
+function createZoomControl() {
   let btnContainer = document.createElement("DIV");
   btnContainer.className = "btn-container";
 
@@ -172,11 +183,10 @@ function createControlBtn() {
   nextiImg.setAttribute("id", "NextImg")
   nextiImg.onclick = () => {
     if (ImageViewer.index == ImageViewer.urls.length - 1) {
-      ImageViewer.setImage(ImageViewer.urls[0], 0);
+      ImageViewer.setImage(0);
       return;
     }
-    const index = ImageViewer.index + 1;
-    ImageViewer.setImage(ImageViewer.urls[index], index);
+    ImageViewer.setImage(ImageViewer.index + 1);
   }
 
   let previousImg = document.createElement("BUTTON");
@@ -184,12 +194,10 @@ function createControlBtn() {
   previousImg.setAttribute("id", "PreviousImg")
   previousImg.onclick = () => {
     if (ImageViewer.index == 0) {
-      const lastImg = ImageViewer.urls.length - 1;
-      ImageViewer.setImage(ImageViewer.urls[lastImg], lastImg);
+      ImageViewer.setImage(ImageViewer.urls.length - 1); // lastImg
       return;
     }
-    const index = ImageViewer.index - 1;
-    ImageViewer.setImage(ImageViewer.urls[index], index);
+    ImageViewer.setImage(ImageViewer.index - 1);
   }
 
   if (hwNodeList.length == 1) {
@@ -213,7 +221,7 @@ function createControlBtn() {
   minus.innerHTML = '-';
   btnScaleDown.appendChild(minus);
   btnScaleDown.onclick = function () {
-    slider.value = parseInt(slider.value) - 10;
+    slider.value = parseInt(slider.value) - 1;
     slider.oninput();
   }
 
@@ -225,23 +233,20 @@ function createControlBtn() {
   plus.innerHTML = '+';
   btnScaleUp.appendChild(plus);
   btnScaleUp.onclick = function () {
-    slider.value = parseInt(slider.value) + 10;
+    slider.value = parseInt(slider.value) + 1;
     slider.oninput();
   }
 
   slider = document.createElement("input");
   slider.setAttribute("type", "range");
-  slider.setAttribute("min", "20");
-  slider.setAttribute("max", "100");
-  slider.setAttribute("value", "20");
+  slider.setAttribute("min", "10");
+  slider.setAttribute("max", "50");
+  slider.setAttribute("value", "1");
   slider.setAttribute("id", "ScaleSlider");
   slider.classList.add("scale-slider");
   slider.oninput = function () {
-    zoomElement.scale = this.value / 20;
+    zoomElement.scale.value = this.value / this.max * zoomElement.scale.max;
   }
-
-  let leftSideThumbnails = document.createElement("DIV");
-  leftSideThumbnails.className += "left-side-thumbnails";
 
   btnContainer.appendChild(rotateLeft);
   btnContainer.appendChild(rotateRight);
@@ -256,76 +261,65 @@ function createControlBtn() {
   zoomControl.appendChild(btnClose);
   zoomControl.prepend(btnContainer);
 
-  viewerContainer.prepend(zoomControl);
+  return zoomControl;
 }
 
 const createOpenButtons = function (previewElements) {
+  console.log("createOpenButtons")
   for (let i = 0; i < previewElements.length; i++) {
     ImageViewer.urls.push(previewElements[i].lastChild.href);
 
     const openButton = document.createElement("div");
-    openButton.className = "open-buttons";
+    openButton.className = "open-button";
     openButton.onclick = () => {
-      if (ImageViewer.isCreated == false) {
-        createViewer();
-      }
+      if (ImageViewer.isCreated == false) { createViewer(); }
       zoomElement.clear();
-      homeworkImage.style.width = "";
-      homeworkImage.style.height = "";
-      ImageViewer.setImage(previewElements[i].lastChild.href, i);
-      if (ImageViewer.index == i) {
-        toggleViewer(true, i);
-        viewerContainer.style.display = "flex";
-        return;
-      }
+      ImageViewer.setImage(i);
       toggleViewer(true, i);
-      viewerContainer.style.display = "flex";
     }
     previewElements[i].prepend(openButton);
   }
 }
 
-const getHwPreview = function () {
-  getHwIntervalId = setInterval(function () {
-    hwNodeList = document.getElementsByClassName("dz-image");
-
-    if (hwNodeList.length > 0) {
-      const formats = [".jpg", ".jpeg", ".png", ".bmp"];
-      function checkFormats(url) {
-        for (const format of formats) {
-          if (url.endsWith(format)) {
-            return true;
-          }
-        }
-        return false
-      }
-
-      const elements = [];
+const getHwElements = function () {
+  hwNodeList = document.getElementsByClassName("dz-image");
+  if (hwNodeList.length > 0) {
+    const previewElements = [];
+    const formats = [".jpg", ".jpeg", ".png", ".bmp"];
+    formats.forEach(format => {
       for (let element of hwNodeList) {
-        if (checkFormats(element.lastElementChild.href)) {
-          elements.push(element);
-        }
+        if (element.lastElementChild.href.endsWith(format)) {
+           previewElements.push(element);
+         }
       }
+    });
 
-      if (elements.length == 0) {
-        console.warn("Element is not image");
-        clearInterval(getHwIntervalId);
-        clearTimeout(timeOutId);
-        return;
-      }
-
-      createOpenButtons(elements);
-      clearInterval(getHwIntervalId);
-      clearTimeout(timeOutId);
-    } else {
-      clearTimeout(timeOutId);
-      clearInterval(getHwIntervalId)
+    if (previewElements.length == 0) {
+      console.warn("Element is not image");
+      clearTime()
+      return;
     }
-  }, 250);
+
+    clearTime();
+    createOpenButtons(previewElements);
+  }
 }
 
-timeOutId = setTimeout(() => {
+let getHwIntervalId = setInterval(getHwElements, 250);
+
+let timeOutId = setTimeout(() => {
   clearInterval(getHwIntervalId)
 }, 18000);
 
-getHwPreview();
+const clearTime = function() {
+  console.log("clearTime")
+  clearInterval(getHwIntervalId);
+  clearTimeout(timeOutId);
+}
+
+window.onload = () => {
+  if (hwNodeList == undefined || hwNodeList.length == 0) {
+    clearTime();
+    getHwElements();
+  }
+}

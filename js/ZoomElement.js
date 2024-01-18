@@ -6,13 +6,47 @@ const ZoomElement = class {
   #prevX = 0;
   #prevY = 0;
   #deg = 0;
-  #scale = 0;
   #onscale;
   constructor(element) {
+    let scaleValue = 1, max = 5, min = 1;
+    this.scale = {}
+    Object.defineProperties(this.scale, {
+      value: {
+        get() { return scaleValue; },
+        set: (value) => {
+          if (isFinite(value) === false) throw new TypeError(`The '${value}' must be number`);
+          if (value < 1) throw new Error(`The '${value}' less than 1`);
+          if (value > max) throw new Error(`The '${value}' greather than max ${max}`);
+          if (value != scaleValue) {
+            scaleValue = Number(value.toFixed(2));
+            this.#transform({ scale: value });
+
+            //call scale event
+            if (typeof this.#onscale === 'function') {
+              this.#onscale({ value: scaleValue, min, max });
+            }
+          }
+          scaleValue = value;
+        }
+      },
+      min: {
+        get() { return min; },
+        set(value) {
+          if (isFinite(value) === false) throw new TypeError(`The '${value}' must be number`);
+          if (value < 1) throw new Error(`The '${value}' less than 1`);
+          min = value;
+        }
+      },
+      max: {
+        get() { return max; },
+        set(value) {
+          if (isFinite(value) === false) throw new TypeError(`The '${value}' must be number`);
+          max = value;
+        }
+      },
+    });
+    Object.defineProperty(this, "scale", { writable: false });
     this.element = element;
-    this.scale = 1;
-    this.maxScale = 5;
-    this.minScale = 1;
     this.object = this;
     this.element.addEventListener("mouseup", this.mouseup.bind(this.object));
     this.element.addEventListener("mousedown", this.mousedown.bind(this.object));
@@ -23,41 +57,18 @@ const ZoomElement = class {
     return this.#x
   }
   set x(x) {
-    this.#x = Math.round((x - this.#startX) / this.scale) + this.#prevX;
+    this.#x = Math.round((x - this.#startX) / this.scale.value) + this.#prevX;
   }
 
   get y() {
     return this.#y;
   }
   set y(y) {
-    this.#y = Math.round((y - this.#startY) / this.scale) + this.#prevY;
+    this.#y = Math.round((y - this.#startY) / this.scale.value) + this.#prevY;
 
   }
 
-  get scale() {
-    return this.#scale;
-  }
-  set scale(value) {
-    if (value != this.#scale) {
-      this.#scale = Number(value.toFixed(2));
-      this.#transform({ scale: value });
-
-      //call scale event
-      if (typeof this.#onscale === 'function') {
-        this.#onscale({
-          scale: {
-            value: value,
-            min: this.minScale,
-            max: this.maxScale
-          }
-        });
-      }
-    }
-  }
-
-  get onscale() {
-    return this.#onscale;
-  }
+  get onscale() { return this.#onscale; }
   set onscale(func) {
     if (typeof func === "function") {
       this.#onscale = func;
@@ -116,21 +127,21 @@ const ZoomElement = class {
   wheel = (event) => {
     event.preventDefault();
     if (event.deltaY < 0) {
-      if (this.scale + 0.1 >= this.maxScale) {
-        this.scale = this.maxScale;
+      if (this.scale.value + 0.1 >= this.scale.max) {
+        this.scale.value = this.scale.max;
         return;
       }
-      this.scale += 0.1;
+      this.scale.value += 0.1;
     } else {
-      if (this.scale - 0.1 <= this.minScale) {
-        this.scale = this.minScale;
+      if (this.scale.value - 0.1 <= this.scale.min) {
+        this.scale.value = this.scale.min;
         this.#x = 0;
         this.#y = 0;
         this.#startX = 0;
         this.#startY = 0;
         return;
       }
-      this.scale -= 0.1;
+      this.scale.value -= 0.1;
     }
   }
   #transform(event = {}) {
@@ -155,7 +166,7 @@ const ZoomElement = class {
     }
 
     this.element.style.transform =
-      `scale(${this.scale}) translate(${this.x}px, ${this.y}px) rotate(${this.#deg}deg)`;
+      `scale(${this.scale.value}) translate(${this.x}px, ${this.y}px) rotate(${this.#deg}deg)`;
   }
   clear() {
     this.#x = 0;
@@ -163,8 +174,9 @@ const ZoomElement = class {
     this.#startX = 0;
     this.#startY = 0;
     this.#deg = 0;
-    this.scale = 1;
+    this.scale.value = 1;
     this.element.style.transform = "";
     this.removeEv();
   }
+  reinit() {}
 }

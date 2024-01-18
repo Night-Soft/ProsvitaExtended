@@ -5,13 +5,11 @@ const Thumbnails = class {
     imageClick: null
   }
   thumbnails = [];
-  constructor({element, elementsAs = 'img', urls = []}, options = {}){
+  constructor({element, urls = [], elementsAs = 'img'}, options = {}){
     if (element == undefined) {
-      const referenceError = new ReferenceError("The element missing!");
-      throw referenceError;
+      throw new ReferenceError("The element missing!");
     } else if (urls.length == 0) {
-      const referenceError = new Error("The list of urls is empty");
-      throw referenceError;
+      throw new Error("The list of urls is empty");
     }
     this.element = element;
     this.elementsAs = elementsAs.toLowerCase();
