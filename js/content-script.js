@@ -8,9 +8,7 @@ let hwNodeList,
   thumbnails: undefined,
   isCreated: false,
   urls: [],
-  _index: 0,
-  get index() { return this._index; },
-  set index(value) { this._index = value; },
+  index: 0,
   setImage(index) {
     const endTransition = () => {
       homeworkImage.style.transition = "0";
@@ -22,7 +20,7 @@ let hwNodeList,
     homeworkImage.style.transition = "0.7s";
     homeworkImage.style.backgroundImage = `url(${this.urls[index]})`;
     if (this.thumbnails) {
-      this.thumbnails[this._index].classList.remove('thumbnails-active');
+      this.thumbnails[this.index].classList.remove('thumbnails-active');
       this.thumbnails[index].classList.add('thumbnails-active');
     }
     this.index = index;
